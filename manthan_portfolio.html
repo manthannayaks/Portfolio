@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manthan Nayak — Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<style>
+:root {
+  --bg:#050508; --surface:#0c0c14; --accent:#6ef0c8; --accent2:#a78bfa;
+  --accent3:#f472b6; --text:#f0eefc; --muted:#8884a8;
+  --border:rgba(110,240,200,0.13); --card:rgba(13,13,22,0.82);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;overflow-x:hidden;cursor:none;}
+
+/* CURSOR */
+#cur{width:10px;height:10px;background:var(--accent);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);mix-blend-mode:difference;transition:transform .15s;}
+#cur-r{width:38px;height:38px;border:1px solid rgba(110,240,200,.5);border-radius:50%;position:fixed;top:0;left:0;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:width .3s,height .3s,border-color .3s;}
+
+/* CANVAS */
+#bgc{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+
+/* ORBS */
+.orb{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0;opacity:.1;}
+.o1{width:600px;height:600px;background:var(--accent);top:-200px;right:-200px;}
+.o2{width:450px;height:450px;background:var(--accent2);bottom:10%;left:-150px;}
+.o3{width:350px;height:350px;background:var(--accent3);top:55%;right:5%;}
+
+/* NOISE */
+.noise{position:fixed;inset:0;z-index:2;pointer-events:none;opacity:.022;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:180px;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.3rem 5rem;transition:background .4s,backdrop-filter .4s;}
+nav.sc{background:rgba(5,5,8,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);}
+.nlogo{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nlinks{display:flex;gap:2.5rem;list-style:none;}
+.nlinks a{color:var(--muted);text-decoration:none;font-size:.82rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;transition:color .2s;cursor:none;}
+.nlinks a:hover{color:var(--accent);}
+
+/* HERO */
+#hero{min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;padding:0 8rem;position:relative;z-index:1;}
+.htag{font-size:.73rem;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:1.6rem;opacity:0;transform:translateY(20px);border:1px solid var(--border);padding:.4rem 1rem;border-radius:999px;display:inline-block;}
+.hname{font-family:'Syne',sans-serif;font-size:clamp(3.5rem,8.5vw,8rem);font-weight:800;line-height:.92;letter-spacing:-4px;opacity:0;transform:translateY(30px);}
+.hname span{background:linear-gradient(130deg,var(--accent) 0%,var(--accent2) 55%,var(--accent3) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.hsub{font-size:clamp(.95rem,1.8vw,1.25rem);color:var(--muted);font-weight:300;margin-top:1.8rem;max-width:540px;line-height:1.7;opacity:0;transform:translateY(20px);}
+.hcta{margin-top:3rem;display:flex;gap:1rem;opacity:0;transform:translateY(20px);}
+.btn{padding:.85rem 2.2rem;border-radius:8px;font-family:'Outfit',sans-serif;font-size:.88rem;font-weight:500;cursor:none;text-decoration:none;transition:all .25s;letter-spacing:.02em;display:inline-block;}
+.bp{background:var(--accent);color:#050508;border:none;}
+.bp:hover{background:#52e8bc;transform:translateY(-3px);box-shadow:0 16px 40px rgba(110,240,200,.28);}
+.bg{background:transparent;color:var(--text);border:1px solid var(--border);}
+.bg:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-3px);}
+.shi{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:.5rem;color:var(--muted);font-size:.72rem;letter-spacing:.12em;opacity:0;}
+.shl{width:1px;height:52px;background:linear-gradient(to bottom,var(--accent),transparent);animation:sp 2s ease-in-out infinite;}
+@keyframes sp{0%,100%{opacity:.25}50%{opacity:1}}
+
+/* SECTIONS */
+section{position:relative;z-index:1;}
+.si{max-width:1200px;margin:0 auto;padding:7rem 4rem;}
+.slbl{font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--accent);margin-bottom:.9rem;display:flex;align-items:center;gap:.9rem;}
+.slbl::after{content:'';flex:0 0 36px;height:1px;background:var(--accent);opacity:.4;}
+.stitle{font-family:'Syne',sans-serif;font-size:clamp(2rem,4vw,3.4rem);font-weight:700;letter-spacing:-1.5px;line-height:1.05;margin-bottom:1rem;}
+
+/* ABOUT */
+#about .si{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:center;}
+.atext p{color:var(--muted);font-size:1rem;line-height:1.8;margin-bottom:1.2rem;font-weight:300;}
+.atext strong{color:var(--text);font-weight:500;}
+.astats{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;margin-top:2.5rem;}
+.sc2{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.4rem;backdrop-filter:blur(12px);transition:border-color .3s,transform .3s;}
+.sc2:hover{border-color:var(--accent);transform:translateY(-4px);}
+.snum{font-family:'Syne',sans-serif;font-size:2.1rem;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.slb{color:var(--muted);font-size:.78rem;margin-top:.3rem;}
+.avis{display:flex;justify-content:center;align-items:center;}
+.pring{width:280px;height:280px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;position:relative;animation:rot 22s linear infinite;}
+@keyframes rot{to{transform:rotate(360deg);}}
+.pin{width:220px;height:220px;border-radius:50%;background:linear-gradient(135deg,rgba(110,240,200,.08),rgba(167,139,250,.08));border:1px solid rgba(110,240,200,.18);display:flex;align-items:center;justify-content:center;animation:rot 22s linear infinite reverse;overflow:hidden;}
+.pin::before{content:'MN';font-family:'Syne',sans-serif;font-size:3.8rem;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.odot{position:absolute;width:10px;height:10px;border-radius:50%;background:var(--accent);top:-5px;left:50%;transform:translateX(-50%);box-shadow:0 0 14px var(--accent);}
+
+/* SKILLS */
+#skills{background:var(--surface);}
+.sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1.4rem;margin-top:3rem;}
+.scat{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:1.8rem;backdrop-filter:blur(12px);transition:all .35s;position:relative;overflow:hidden;}
+.scat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2));transform:scaleX(0);transform-origin:left;transition:transform .4s;}
+.scat:hover::before{transform:scaleX(1);}
+.scat:hover{border-color:rgba(110,240,200,.28);transform:translateY(-5px);box-shadow:0 20px 50px rgba(0,0,0,.3);}
+.sci{font-size:1.7rem;margin-bottom:.9rem;}
+.scti{font-family:'Syne',sans-serif;font-size:.95rem;font-weight:700;margin-bottom:.9rem;}
+.stags{display:flex;flex-wrap:wrap;gap:.45rem;}
+.tag{font-size:.72rem;padding:.28rem .72rem;border-radius:999px;background:rgba(110,240,200,.07);color:var(--accent);border:1px solid rgba(110,240,200,.14);transition:all .2s;}
+.tag:hover{background:rgba(110,240,200,.15);}
+.tag.p{background:rgba(167,139,250,.07);color:var(--accent2);border-color:rgba(167,139,250,.14);}
+.tag.k{background:rgba(244,114,182,.07);color:var(--accent3);border-color:rgba(244,114,182,.14);}
+
+/* PROJECTS */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:1.8rem;margin-top:3rem;}
+.pc{background:var(--card);border:1px solid var(--border);border-radius:22px;padding:2rem;backdrop-filter:blur(14px);transition:all .4s cubic-bezier(.23,1,.32,1);position:relative;overflow:hidden;cursor:none;}
+.pc::after{content:'';position:absolute;inset:0;border-radius:22px;background:radial-gradient(500px circle at var(--mx,50%) var(--my,50%),rgba(110,240,200,.06),transparent 40%);pointer-events:none;opacity:0;transition:opacity .3s;}
+.pc:hover::after{opacity:1;}
+.pc:hover{border-color:rgba(110,240,200,.35);transform:translateY(-10px) scale(1.012);box-shadow:0 40px 70px rgba(0,0,0,.5),0 0 60px rgba(110,240,200,.04);}
+.pc.ft{grid-column:span 2;background:linear-gradient(135deg,rgba(110,240,200,.03),rgba(167,139,250,.03));}
+.ptop{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.1rem;}
+.pbadge{font-size:.68rem;padding:.22rem .8rem;border-radius:999px;font-weight:500;letter-spacing:.05em;background:rgba(110,240,200,.1);color:var(--accent);border:1px solid rgba(110,240,200,.18);}
+.pbadge.ai{background:rgba(167,139,250,.1);color:var(--accent2);border-color:rgba(167,139,250,.18);}
+.pbadge.ml{background:rgba(244,114,182,.1);color:var(--accent3);border-color:rgba(244,114,182,.18);}
+.plinks{display:flex;gap:.7rem;}
+.plink{color:var(--muted);text-decoration:none;font-size:.77rem;transition:color .2s;cursor:none;}
+.plink:hover{color:var(--accent);}
+.pnum{font-family:'Syne',sans-serif;font-size:.68rem;color:var(--muted);margin-bottom:.4rem;letter-spacing:.1em;}
+.ptitle{font-family:'Syne',sans-serif;font-size:1.25rem;font-weight:700;margin-bottom:.55rem;letter-spacing:-.4px;line-height:1.2;}
+.pline{font-size:.8rem;color:var(--accent);font-style:italic;margin-bottom:.7rem;}
+.pdesc{color:var(--muted);font-size:.86rem;line-height:1.72;margin-bottom:1.2rem;font-weight:300;}
+.pmets{display:flex;gap:1.6rem;margin-bottom:1.4rem;}
+.met .mv{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.met .ml{font-size:.68rem;color:var(--muted);}
+.pstack{display:flex;flex-wrap:wrap;gap:.4rem;}
+.stk{font-size:.68rem;padding:.18rem .58rem;border-radius:5px;background:rgba(255,255,255,.04);color:var(--muted);border:1px solid rgba(255,255,255,.06);}
+
+/* EXPERIENCE */
+#exp{background:var(--surface);}
+.etl{margin-top:3rem;position:relative;}
+.etl::before{content:'';position:absolute;left:0;top:0;bottom:0;width:1px;background:linear-gradient(to bottom,var(--accent),transparent);opacity:.3;}
+.ei{padding-left:3rem;padding-bottom:3rem;position:relative;}
+.ei::before{content:'';position:absolute;left:-5px;top:6px;width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 14px var(--accent);}
+.edate{font-size:.76rem;color:var(--accent);letter-spacing:.08em;margin-bottom:.4rem;font-weight:500;}
+.erole{font-family:'Syne',sans-serif;font-size:1.18rem;font-weight:700;margin-bottom:.2rem;}
+.eorg{color:var(--muted);font-size:.85rem;margin-bottom:1rem;}
+.ebul{list-style:none;}
+.ebul li{color:var(--muted);font-size:.86rem;line-height:1.72;padding-left:1.2rem;position:relative;margin-bottom:.5rem;font-weight:300;}
+.ebul li::before{content:'▸';position:absolute;left:0;color:var(--accent);font-size:.68rem;top:.32rem;}
+.ebul strong{color:var(--text);font-weight:500;}
+
+/* CONTACT */
+#contact{text-align:center;min-height:55vh;display:flex;align-items:center;}
+#contact .si{width:100%;}
+.clbl{justify-content:center;}
+.cdesc{color:var(--muted);font-size:1rem;max-width:480px;margin:1rem auto 3rem;line-height:1.75;font-weight:300;}
+.clinks{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;}
+.clink{display:flex;align-items:center;gap:.6rem;padding:.85rem 1.7rem;border-radius:10px;border:1px solid var(--border);color:var(--text);text-decoration:none;font-size:.86rem;transition:all .25s;cursor:none;background:var(--card);backdrop-filter:blur(10px);}
+.clink:hover{border-color:var(--accent);color:var(--accent);transform:translateY(-3px);box-shadow:0 14px 35px rgba(110,240,200,.1);}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:1.8rem 5rem;display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:.78rem;position:relative;z-index:1;}
+
+/* REVEAL */
+.rv{opacity:0;transform:translateY(40px);}
+
+@media(max-width:768px){
+  #hero{padding:0 2rem;}
+  nav{padding:1rem 2rem;}
+  .nlinks{gap:1.2rem;}
+  .si{padding:5rem 2rem;}
+  #about .si{grid-template-columns:1fr;}
+  .pc.ft{grid-column:span 1;}
+  .avis{display:none;}
+  footer{flex-direction:column;gap:.8rem;text-align:center;padding:1.5rem 2rem;}
+}
+</style>
+</head>
+<body>
+<div id="cur"></div>
+<div id="cur-r"></div>
+<div class="noise"></div>
+<div class="orb o1"></div>
+<div class="orb o2"></div>
+<div class="orb o3"></div>
+<canvas id="bgc"></canvas>
+
+<nav id="nav">
+  <div class="nlogo">MN</div>
+  <ul class="nlinks">
+    <li><a href="#about">About</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#exp">Experience</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="htag">B.Tech AI &amp; DS &nbsp;·&nbsp; IIT Jodhpur &nbsp;·&nbsp; 2026</div>
+  <h1 class="hname">Manthan<br><span>Nayak</span></h1>
+  <p class="hsub">Full-stack Software Engineer building production-grade web applications. Blending AI/ML depth with clean, scalable engineering.</p>
+  <div class="hcta">
+    <a href="#projects" class="btn bp">View Projects</a>
+    <a href="#contact" class="btn bg">Get In Touch</a>
+  </div>
+  <div class="shi"><span>scroll</span><div class="shl"></div></div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="si">
+    <div class="atext">
+      <div class="slbl rv">About Me</div>
+      <h2 class="stitle rv">Crafting digital<br>experiences that scale.</h2>
+      <p class="rv">I'm a <strong>2nd-year B.Tech student at IIT Jodhpur</strong> specialising in AI &amp; Data Science. I build full-stack applications that are fast, reliable, and serve real users — not just demos.</p>
+      <p class="rv">My work spans <strong>RESTful API design</strong> and <strong>React frontends</strong> to <strong>ML pipelines</strong> and <strong>RAG systems</strong>. I've shipped apps used by 50+ students and led Agile teams end-to-end.</p>
+      <div class="astats">
+        <div class="sc2 rv"><div class="snum">50+</div><div class="slb">Real users served</div></div>
+        <div class="sc2 rv"><div class="snum">4</div><div class="slb">Live projects</div></div>
+        <div class="sc2 rv"><div class="snum">73.4%</div><div class="slb">mAP — DANN model</div></div>
+        <div class="sc2 rv"><div class="snum">80%</div><div class="slb">Effort reduced (Mess App)</div></div>
+      </div>
+    </div>
+    <div class="avis rv">
+      <div class="pring">
+        <div class="odot"></div>
+        <div class="pin"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="si">
+    <div class="slbl rv">Technical Arsenal</div>
+    <h2 class="stitle rv">What I work with</h2>
+    <div class="sgrid">
+      <div class="scat rv"><div class="sci">⚡</div><div class="scti">Languages</div><div class="stags"><span class="tag">Python</span><span class="tag">JavaScript</span><span class="tag">C++</span><span class="tag">C (OOP)</span></div></div>
+      <div class="scat rv"><div class="sci">🌐</div><div class="scti">Web Development</div><div class="stags"><span class="tag p">React.js</span><span class="tag p">Node.js</span><span class="tag p">FastAPI</span><span class="tag p">HTML5</span><span class="tag p">CSS3</span><span class="tag p">Three.js</span></div></div>
+      <div class="scat rv"><div class="sci">🧠</div><div class="scti">AI / ML</div><div class="stags"><span class="tag k">PyTorch</span><span class="tag k">Scikit-learn</span><span class="tag k">NLP</span><span class="tag k">OpenCV</span><span class="tag k">RAG</span><span class="tag k">NumPy</span><span class="tag k">Pandas</span></div></div>
+      <div class="scat rv"><div class="sci">🛠</div><div class="scti">SDE / Engineering</div><div class="stags"><span class="tag">REST API</span><span class="tag">Agile/Scrum</span><span class="tag">CI/CD</span><span class="tag">System Design</span><span class="tag">DSA</span><span class="tag">Version Control</span></div></div>
+      <div class="scat rv"><div class="sci">🗄</div><div class="scti">Databases &amp; Auth</div><div class="stags"><span class="tag p">MongoDB</span><span class="tag p">SQL</span><span class="tag p">Google OAuth 2.0</span><span class="tag p">Vector DB</span></div></div>
+      <div class="scat rv"><div class="sci">🔧</div><div class="scti">Tools &amp; Platforms</div><div class="stags"><span class="tag">Git / GitHub</span><span class="tag">Vercel</span><span class="tag">Postman</span><span class="tag">VS Code</span><span class="tag">Linux</span><span class="tag">Google Colab</span></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROJECTS -->
+<section id="projects">
+  <div class="si">
+    <div class="slbl rv">Work</div>
+    <h2 class="stitle rv">Projects that ship.</h2>
+    <div class="pgrid">
+
+      <div class="pc ft rv" id="p1">
+        <div class="ptop"><span class="pbadge">⬤ Production</span><div class="plinks"><a href="https://mess-rebate.vercel.app/" class="plink" target="_blank">↗ Live</a></div></div>
+        <div class="pnum">01 &nbsp;/&nbsp; Most Impactful</div>
+        <h3 class="ptitle">IITJ Mess Rebate Application</h3>
+        <p class="pline">Production utility serving 50+ IIT Jodhpur students</p>
+        <p class="pdesc">Architected and deployed a scalable full-stack web application end-to-end — designed MongoDB schema, implemented Google OAuth 2.0 authentication, and built React.js UI. Automated complex rebate calculation logic eliminating manual errors entirely.</p>
+        <div class="pmets">
+          <div class="met"><div class="mv">50+</div><div class="ml">Active users</div></div>
+          <div class="met"><div class="mv">80%</div><div class="ml">Effort reduced</div></div>
+          <div class="met"><div class="mv">0</div><div class="ml">Calc errors</div></div>
+        </div>
+        <div class="pstack"><span class="stk">React.js</span><span class="stk">Node.js</span><span class="stk">MongoDB</span><span class="stk">Google OAuth 2.0</span><span class="stk">Vercel</span></div>
+      </div>
+
+      <div class="pc rv" id="p2">
+        <div class="ptop"><span class="pbadge ai">AI-Powered</span><div class="plinks"><a href="https://github.com/devlup-labs/sqora.git" class="plink" target="_blank">↗ GitHub</a><a href="https://sqora.vercel.app" class="plink" target="_blank">↗ Live</a></div></div>
+        <div class="pnum">02 &nbsp;/&nbsp; Full-Stack + AI</div>
+        <h3 class="ptitle">SQORA — Smart Query &amp; Resource Assistant</h3>
+        <p class="pline">AI-powered collaborative student knowledge management</p>
+        <p class="pdesc">RESTful APIs via FastAPI + React.js frontend with sub-2s response times. Led a 5-member Agile team; integrated RAG pipeline improving answer relevance by 40%.</p>
+        <div class="pmets">
+          <div class="met"><div class="mv">40%</div><div class="ml">Better answers</div></div>
+          <div class="met"><div class="mv">&lt;2s</div><div class="ml">Response time</div></div>
+        </div>
+        <div class="pstack"><span class="stk">React.js</span><span class="stk">FastAPI</span><span class="stk">RAG</span><span class="stk">Vector DB</span><span class="stk">Python</span><span class="stk">Vercel</span></div>
+      </div>
+
+      <div class="pc rv" id="p3">
+        <div class="ptop"><span class="pbadge">⬤ Live</span><div class="plinks"><a href="https://manthannayaks.github.io/Image_Segmentation_WebApp/" class="plink" target="_blank">↗ Live</a></div></div>
+        <div class="pnum">03 &nbsp;/&nbsp; Real-time Processing</div>
+        <h3 class="ptitle">Image Segmentation Web App</h3>
+        <p class="pline">Real-time image processing with frontend–backend integration</p>
+        <p class="pdesc">FastAPI backend + JavaScript frontend via RESTful API achieving under 500ms latency. Modular Python pipeline using HSV colour-thresholding via OpenCV.</p>
+        <div class="pmets"><div class="met"><div class="mv">&lt;500ms</div><div class="ml">Latency</div></div></div>
+        <div class="pstack"><span class="stk">Python</span><span class="stk">OpenCV</span><span class="stk">FastAPI</span><span class="stk">JavaScript</span><span class="stk">HTML5</span></div>
+      </div>
+
+      <div class="pc rv" id="p4">
+        <div class="ptop"><span class="pbadge ml">ML Research</span><div class="plinks"><a href="https://github.com/manthannayaks/Domain-guided-content-based-image-retrieval.git" class="plink" target="_blank">↗ GitHub</a></div></div>
+        <div class="pnum">04 &nbsp;/&nbsp; Deep Learning</div>
+        <h3 class="ptitle">Domain-Guided Content-Based Image Retrieval</h3>
+        <p class="pline">Cross-domain visual retrieval — Office-Home dataset (65 classes)</p>
+        <p class="pdesc">DANN with Gradient Reversal Layers in PyTorch for domain adaptation across 65 classes, 4 domains. 38.7% improvement above source-only baseline.</p>
+        <div class="pmets">
+          <div class="met"><div class="mv">73.4%</div><div class="ml">mAP</div></div>
+          <div class="met"><div class="mv">71.2%</div><div class="ml">Top-1 Acc</div></div>
+          <div class="met"><div class="mv">+38.7%</div><div class="ml">vs Baseline</div></div>
+        </div>
+        <div class="pstack"><span class="stk">PyTorch</span><span class="stk">ResNet-50</span><span class="stk">VGG16</span><span class="stk">OpenCV</span><span class="stk">NumPy</span></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- EXPERIENCE -->
+<section id="exp">
+  <div class="si">
+    <div class="slbl rv">Career</div>
+    <h2 class="stitle rv">Experience &amp;<br>Education</h2>
+    <div class="etl">
+      <div class="ei rv">
+        <div class="edate">May 2025 – Nov. 2025</div>
+        <div class="erole">Software Research Intern — AI &amp; Decision Making Lab</div>
+        <div class="eorg">Under Prof. Venkat Ram Reddy &nbsp;·&nbsp; IIT Jodhpur</div>
+        <ul class="ebul">
+          <li>Engineered an <strong>automated benchmarking pipeline</strong> in Python to evaluate <strong>5+ LLMs</strong> across <strong>50+ NLP test scenarios</strong>, measuring accuracy, consistency and relevance.</li>
+          <li>Applied <strong>software debugging and testing</strong> via prompt engineering, improving evaluation methodology coverage by <strong>~30%</strong> and guiding LLM selection decisions.</li>
+        </ul>
+      </div>
+      <div class="ei rv">
+        <div class="edate">2024 – Present &nbsp;·&nbsp; 2nd Year</div>
+        <div class="erole">B.Tech. — Artificial Intelligence &amp; Data Science</div>
+        <div class="eorg">Indian Institute of Technology, Jodhpur &nbsp;·&nbsp; CGPA 6.1</div>
+        <ul class="ebul">
+          <li>Core courses: <strong>DSA, OS, DBMS, OOP, Web Services, ML, Neural Networks, Linear Algebra, Probability &amp; Statistics</strong></li>
+          <li>Sports Coordinator, Hockey Club — led inter-IIT logistics &amp; coordination for 30+ members (Jul 2025 – Apr 2026).</li>
+          <li>freeCodeCamp certified — Responsive Web Design &amp; JS Algorithms (2024).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="si">
+    <div class="slbl rv clbl">Contact</div>
+    <h2 class="stitle rv" style="text-align:center">Let's build something<br><span style="background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent">remarkable.</span></h2>
+    <p class="cdesc rv">Open to SDE internships and full-time roles. Let's talk about what we can create together.</p>
+    <div class="clinks rv">
+      <a href="mailto:bomanthan51@gmail.com" class="clink">✉&nbsp; bomanthan51@gmail.com</a>
+      <a href="https://linkedin.com/in/manthan-nayak-807a19317" target="_blank" class="clink">in&nbsp; LinkedIn</a>
+      <a href="https://github.com/manthannayaks" target="_blank" class="clink">⌥&nbsp; GitHub</a>
+      <a href="tel:+917892632484" class="clink">✆&nbsp; +91-7892632484</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>© 2026 Manthan Nayak</span>
+  <span style="color:var(--accent)">IIT Jodhpur · B24CM1044</span>
+  <span>Three.js + GSAP</span>
+</footer>
+
+<script>
+// ── CURSOR ──────────────────────────────────────────
+const cur=document.getElementById('cur'),curR=document.getElementById('cur-r');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove',e=>{
+  mx=e.clientX;my=e.clientY;
+  cur.style.left=mx+'px';cur.style.top=my+'px';
+});
+(function lag(){rx+=(mx-rx)*.11;ry+=(my-ry)*.11;curR.style.left=rx+'px';curR.style.top=ry+'px';requestAnimationFrame(lag);})();
+document.querySelectorAll('a,button,.pc,.sc2,.scat').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{curR.style.width='56px';curR.style.height='56px';curR.style.borderColor='var(--accent)';});
+  el.addEventListener('mouseleave',()=>{curR.style.width='38px';curR.style.height='38px';});
+});
+
+// ── THREE.JS ────────────────────────────────────────
+const canvas=document.getElementById('bgc');
+const renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.setSize(innerWidth,innerHeight);
+const scene=new THREE.Scene();
+const cam=new THREE.PerspectiveCamera(60,innerWidth/innerHeight,.1,1000);
+cam.position.z=30;
+
+// Particle system
+const N=2200;
+const geo=new THREE.BufferGeometry();
+const pos=new Float32Array(N*3),col=new Float32Array(N*3),sz=new Float32Array(N);
+const pal=[[.43,.94,.78],[.65,.54,.98],[.96,.44,.71],[.43,.94,.78]];
+for(let i=0;i<N;i++){
+  pos[i*3]=(Math.random()-.5)*110;
+  pos[i*3+1]=(Math.random()-.5)*110;
+  pos[i*3+2]=(Math.random()-.5)*65;
+  const c=pal[Math.floor(Math.random()*pal.length)];
+  col[i*3]=c[0];col[i*3+1]=c[1];col[i*3+2]=c[2];
+  sz[i]=Math.random()*2.2+.4;
+}
+geo.setAttribute('position',new THREE.BufferAttribute(pos,3));
+geo.setAttribute('color',new THREE.BufferAttribute(col,3));
+const mat=new THREE.PointsMaterial({size:.14,vertexColors:true,transparent:true,opacity:.55,sizeAttenuation:true});
+const pts=new THREE.Points(geo,mat);
+scene.add(pts);
+
+// Wireframe shapes
+const mkWire=(g,color,x,y,z,op=.05)=>{
+  const m=new THREE.Mesh(g,new THREE.MeshBasicMaterial({color,wireframe:true,transparent:true,opacity:op}));
+  m.position.set(x,y,z);scene.add(m);return m;
+};
+const torus=mkWire(new THREE.TorusKnotGeometry(7,2.2,80,14),0x6ef0c8,16,-4,-8,.04);
+const ico=mkWire(new THREE.IcosahedronGeometry(5,1),0xa78bfa,-18,8,-14,.055);
+const oct=mkWire(new THREE.OctahedronGeometry(4,0),0xf472b6,0,12,-20,.05);
+
+// Mouse parallax
+let tx=0,ty=0;
+document.addEventListener('mousemove',e=>{tx=(e.clientX/innerWidth-.5)*2;ty=(e.clientY/innerHeight-.5)*2;});
+
+let t=0;
+(function draw(){
+  requestAnimationFrame(draw);t+=.004;
+  pts.rotation.y+=.0003;pts.rotation.x+=.0001;
+  torus.rotation.x=t*.35;torus.rotation.y=t*.28;
+  ico.rotation.x=-t*.28;ico.rotation.z=t*.22;
+  oct.rotation.y=t*.4;oct.rotation.x=t*.18;
+  cam.position.x+=(tx*3.5-cam.position.x)*.04;
+  cam.position.y+=(-ty*2.5-cam.position.y)*.04;
+  cam.lookAt(scene.position);
+  renderer.render(scene,cam);
+})();
+window.addEventListener('resize',()=>{
+  cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();
+  renderer.setSize(innerWidth,innerHeight);
+});
+
+// ── GSAP ────────────────────────────────────────────
+gsap.registerPlugin(ScrollTrigger);
+
+// Hero
+gsap.timeline({defaults:{ease:'power3.out'}})
+  .to('.htag',{opacity:1,y:0,duration:.9,delay:.25})
+  .to('.hname',{opacity:1,y:0,duration:1.1},'-=.5')
+  .to('.hsub',{opacity:1,y:0,duration:.8},'-=.6')
+  .to('.hcta',{opacity:1,y:0,duration:.7},'-=.5')
+  .to('.shi',{opacity:1,duration:.6},'-=.3');
+
+// Scroll reveals — staggered per batch
+gsap.utils.toArray('.rv').forEach((el,i)=>{
+  gsap.to(el,{opacity:1,y:0,duration:.85,ease:'power3.out',
+    scrollTrigger:{trigger:el,start:'top 90%',toggleActions:'play none none none'},
+    delay:(i%3)*.07});
+});
+
+// Nav
+ScrollTrigger.create({start:'top -60',onUpdate:s=>document.getElementById('nav').classList.toggle('sc',s.progress>0)});
+
+// Project card radial glow
+document.querySelectorAll('.pc').forEach(c=>{
+  c.addEventListener('mousemove',e=>{
+    const r=c.getBoundingClientRect();
+    c.style.setProperty('--mx',(e.clientX-r.left)+'px');
+    c.style.setProperty('--my',(e.clientY-r.top)+'px');
+  });
+});
+
+// Orb parallax
+document.addEventListener('mousemove',e=>{
+  const x=(e.clientX/innerWidth-.5)*40,y=(e.clientY/innerHeight-.5)*40;
+  gsap.to('.o1',{x:x*.7,y:y*.7,duration:1.8,ease:'power2.out'});
+  gsap.to('.o2',{x:-x*.45,y:-y*.45,duration:2.2,ease:'power2.out'});
+  gsap.to('.o3',{x:x*.35,y:y*.35,duration:2,ease:'power2.out'});
+});
+</script>
+</body>
+</html>
